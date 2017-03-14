@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace SoccerStats
 {
@@ -12,20 +13,21 @@ namespace SoccerStats
     {
         static void Main(string[] args)
         {
-            string currentDirectory = Directory.GetCurrentDirectory();
-            DirectoryInfo directory = new DirectoryInfo(currentDirectory);
-            var fileName = Path.Combine(directory.FullName, "SoccerGameResults.csv");
-            var fileContents = ReadSoccerResults(fileName);
-            fileName = Path.Combine(directory.FullName, "players.json");
-            var players = DeserializePlayers(fileName);
-            var topTenPlayers = GetTopTenPlayers(players);
-            foreach(var player in topTenPlayers)
-            {
-                Console.WriteLine("Name: " + player.FirstName + " PPG: " + player.PointsPerGame);
-            }
+            //string currentDirectory = Directory.GetCurrentDirectory();
+            //DirectoryInfo directory = new DirectoryInfo(currentDirectory);
+            //var fileName = Path.Combine(directory.FullName, "SoccerGameResults.csv");
+            //var fileContents = ReadSoccerResults(fileName);
+            //fileName = Path.Combine(directory.FullName, "players.json");
+            //var players = DeserializePlayers(fileName);
+            //var topTenPlayers = GetTopTenPlayers(players);
+            //foreach(var player in topTenPlayers)
+            //{
+            //    Console.WriteLine("Name: " + player.FirstName + " PPG: " + player.PointsPerGame);
+            //}
 
-            fileName = Path.Combine(directory.FullName, "topten.json");
-            SerializePlayersToFile(topTenPlayers, fileName);
+            //fileName = Path.Combine(directory.FullName, "topten.json");
+            //SerializePlayersToFile(topTenPlayers, fileName);
+            Console.WriteLine(GetNewsForPlayer("Diego Valeri"));
             //foreach(var player in players)
             //{
             //    Console.WriteLine(player.FirstName);  
@@ -144,6 +146,31 @@ namespace SoccerStats
             using (var jsonWriter = new JsonTextWriter(writer))
             {
                 serializer.Serialize(jsonWriter, players);
+            }
+        }
+
+        public static string GetGoogleHomePage()
+        {
+            var webClient = new WebClient();
+            byte[] googleHome = webClient.DownloadData("https://www.google.com");
+
+            using (var stream = new MemoryStream(googleHome))
+            using (var reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        public static string GetNewsForPlayer(string playerName)
+        {
+            var webClient = new WebClient();
+            webClient.Headers.Add("Ocp-Apim-Subscription-Key", "95b3a4440f5342be801879983de9dadc");
+            byte[] searchResults = webClient.DownloadData(string.Format("https://api.cognitive.microsoft.com/bing/v5.0/search?q={0}&mkt=en-us", playerName));
+
+            using (var stream = new MemoryStream(searchResults))
+            using (var reader = new StreamReader(stream))
+            {
+                return reader.ReadToEnd();
             }
         }
     }
